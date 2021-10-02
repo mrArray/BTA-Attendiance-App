@@ -1,0 +1,391 @@
+import React, { useEffect, useState } from "react";
+import { View, Text, StatusBar, TextInput, Button, FlatList } from "react-native";
+import { openDatabase } from "react-native-sqlite-storage";
+
+const db = openDatabase({
+  name: "rn_sqlite",
+});
+
+const App = () => {
+  const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+
+  const createTables = () => {
+    db.transaction(txn => {
+      txn.executeSql(
+        `CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(20))`,
+        [],
+        (sqlTxn, res) => {
+          console.log("table created successfully");
+        },
+        error => {
+          console.log("error on creating table " + error.message);
+        },
+      );
+    });
+  };
+
+  const addCategory = () => {
+    if (!category) {
+      alert("Enter category");
+      return false;
+    }
+
+    db.transaction(txn => {
+      txn.executeSql(
+        `INSERT INTO categories (name) VALUES (?)`,
+        [category],
+        (sqlTxn, res) => {
+          console.log(`${category} category added successfully`);
+          getCategories();
+          setCategory("");
+        },
+        error => {
+          console.log("error on adding category " + error.message);
+        },
+      );
+    });
+  
+  };
+
+  const getCategories = () => {
+    db.transaction(txn => {
+      txn.executeSql(
+        `SELECT * FROM categories ORDER BY id DESC`,
+        [],
+        (sqlTxn, res) => {
+          console.log("categories retrieved successfully");
+          let len = res.rows.length;
+
+          if (len > 0) {
+            let results = [];
+            for (let i = 0; i < len; i++) {
+              let item = res.rows.item(i);
+              results.push({ id: item.id, name: item.name });
+            }
+
+            setCategories(results);
+          }
+        },
+        error => {
+          console.log("error on getting categories " + error.message);
+        },
+      );
+    });
+  };
+
+  const renderCategory = ({ item }) => {
+    return (
+      <View style={{
+        flexDirection: "row",
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        borderBottomWidth: 1,
+        borderColor: "#ddd",
+      }}>
+        <Text style={{ marginRight: 9 }}>{item.id}</Text>
+        <Text>{item.name}</Text>
+      </View>
+    );
+  };
+
+  useEffect(async () => {
+    await createTables();
+    await getCategories();
+  }, []);
+
+  return (
+    <View>
+      <StatusBar backgroundColor="#222" />
+
+      <TextInput
+        placeholder="Enter category"
+        value={category}
+        onChangeText={setCategory}
+        style={{ marginHorizontal: 8 }}
+      />
+
+      <Button title="Submit" onPress={addCategory} />
+
+      <FlatList
+        data={categories}
+        renderItem={renderCategory}
+        key={cat => cat.id}
+      />
+    </View>
+  );
+};
+
+export default App;
+
+//import PoreCompoent for preventing unnecesary updates. 
+import React, { PureComponent } from 'react';
+import axios from "axios";
+import { View,Image, StyleSheet, FlatList, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import  AsyncStorage  from "@react-native-async-storage/async-storage";
+import { openDatabase } from "react-native-sqlite-storage";
+
+// SQLite.enablePromise(true);
+
+const db = openDatabase({
+    name: "Student_List",
+  });
+  
+
+
+export default class StudentsList extends PureComponent {
+    //Define your state for your component. 
+    state = {
+        //Assing a array to your List state
+        StudentList: [],
+        //Have a loading state where when data retrieve returns data. 
+        loading: true,
+
+
+    }
+    
+
+
+    createTables () {
+        db.transaction(txn => {
+          txn.executeSql(
+            `CREATE TABLE IF NOT EXISTS Students (id INTEGER PRIMARY KEY AUTOINCREMENT,
+             username VARCHAR(20),
+             fullname VARCHAR(20),
+             image BLOB,
+             residential_address  VARCHAR(20),
+
+            
+            )`,
+            [],
+            (sqlTxn, res) => {
+              console.log("table created successfully");
+            },
+            error => {
+              console.log("error on creating table " + error.message);
+            },
+          );
+        });
+      };
+
+    componentDidMount() {
+
+     this.createTables();
+      try {
+        AsyncStorage.getItem('LOGGIN_USER')
+        .then(value => {
+          const user=JSON.parse(value);
+          
+          console.log(user.token)
+          axios.get("https://bigtrustacademy.com/accounts/api/list/profile/?user_type=student",
+          {
+              headers:
+              {
+                  'Authorization': `Token ${user.token}`,
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'GET,POST,HEAD,OPTIONS',
+                  'Access-Control-Allow-Credentials': true
+              },
+          })
+          .then(res => {
+            const stud = res.data
+            console.log(stud)
+
+            this.setState({StudentList: stud, loading: false});
+              
+          })
+
+
+        })
+          } catch (error) {
+              console.log(error);
+          }
+          
+          //insert into 
+          for (let i = 0; i < this.state.StudentList; i++) {
+         
+          db.transaction(txn => {
+            txn.executeSql(
+              `INSERT INTO TABLE (username,fullname, residential_address,image) VALUES
+               (StudentList[i].username,StudentList[i].fullname,StudentList[i].residential_address,StudentList[i].image)`,
+              [],
+              (sqlTxn, res) => {
+                console.log(`${StudentList[i]} Record added successfully`);
+                
+              },
+              error => {
+                console.log("error on adding Record " + error.message);
+              },
+            );
+          });
+        }
+  }
+  
+
+  
+
+   
+
+
+    //Define your renderItem method the callback for the FlatList for rendering each item, and pass data as a argument. 
+    renderItem(data) {
+        return <TouchableOpacity style={{backgroundColor: 'white'}}>
+                    <View  style={styles.listItemContainer}>
+                    <Text style={styles.pokeItemHeader}>{data.item.fullname}</Text>
+                        <Image source={{uri:`${data.item.image}`}} 
+                                style={styles.pokeImage}/>
+                    </View>
+                </TouchableOpacity>
+    }
+    render() {
+        //Destruct pokeList and Loading from state.
+        const { StudentList, loading } = this.state;
+        //If laoding to false, return a FlatList which will have data, rednerItem, and keyExtractor props used.
+        //Data contains the data being  mapped over.
+        
+        //RenderItem a callback return UI for each item.
+        //keyExtractor used for giving a unique identifier for each item.
+        if(!loading) {
+            return <FlatList 
+                    data={StudentList}
+                    renderItem={this.renderItem}
+                    keyExtractor={(item) => item.fullname} 
+                    />
+        } else {
+            return <ActivityIndicator   size="large" color={"primary"} />
+
+           
+                
+        }
+    }
+}
+
+
+
+const styles = StyleSheet.create({
+  listItemContainer: {
+      borderStyle: 'solid',
+      borderColor: '#000',
+      borderBottomWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      padding: 20
+  },
+  pokeItemHeader: {  
+      color: '#000',
+      fontSize: 15,
+  },
+  StudentAddress: {  
+    color: '#000',
+    fontSize: 7,
+},
+  pokeImage: {
+      backgroundColor: 'transparent',
+      height: 50,
+      width: 50
+  }
+})
+
+
+
+
+
+
+
+// import { SafeAreaView, View, FlatList, StyleSheet, Text, StatusBar,
+//   ActivityIndicator
+//  } from 'react-native';
+// import React, { useState, useEffect } from "react";
+// import  AsyncStorage  from "@react-native-async-storage/async-storage";
+// import axios from "axios";
+
+
+// const StudentsList = () => {
+
+
+//      const [student, setStudent] = useState({});
+//      const [myloading, setLoading] = useState([true]);
+
+//      const mytoken =AsyncStorage.getItem('LOGGIN_USER');
+//      const token = mytoken.token;
+
+//      const GetStudentRecord = () => {
+//           setLoading(true);
+//           axios
+//                .get("https://bigtrustacademy.com/accounts/api/list/profile/?user_type=student",
+//                     {
+//                          headers:
+//                          {
+//                               'Authorization': `Basic ${token}`,
+//                               'Access-Control-Allow-Origin': '*',
+//                               'Access-Control-Allow-Methods': 'GET,POST,HEAD,OPTIONS',
+//                               'Access-Control-Allow-Credentials': true
+//                          },
+//                     })
+//                .then(res => {
+//                     const student = res.data;
+//                     setStudent(student);
+//                     setLoading(false);
+
+//                });
+//      }
+
+//      //using the functions
+//      useEffect(() => {  
+//       GetStudentRecord();
+//      }, []);
+
+//     //  const renderItem = ({ item }) => (
+//     //   <Item title={item.title} />
+//     // );
+
+//     // const Item = ({ title }) => (
+//     //   <View style={styles.item}>
+//     //     <Text style={styles.title}>{title}</Text>
+//     //   </View>
+//     // );
+    
+
+
+//   return (
+//     <Text>
+
+//     {myloading &&
+
+//       <SafeAreaView style={styles.container}>
+       
+
+//       <ActivityIndicator color={"#000"} />
+              
+//       <FlatList
+//         data={student}
+//       />
+     
+                
+
+//     </SafeAreaView>
+//       }
+//               </Text >
+
+//      );
+// };
+
+// export default StudentsList;
+
+
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     marginTop: StatusBar.currentHeight || 0,
+//   },
+//   item: {
+//     backgroundColor: '#f9c2ff',
+//     padding: 20,
+//     marginVertical: 8,
+//     marginHorizontal: 16,
+//   },
+//   title: {
+//     fontSize: 32,
+//   },
+// });
