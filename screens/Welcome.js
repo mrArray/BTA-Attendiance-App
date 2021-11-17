@@ -1,34 +1,57 @@
 
-import React from 'react'
+import React, { useState,useEffect } from "react";
 import {StyleSheet,Text,View,TouchableOpacity} from 'react-native'
 import Dashboard from 'react-native-dashboard';
 import { FontAwesome } from 'react-native-vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Ionicons,MaterialIcons,FontAwesome5 ,Entypo,Fontisto,AntDesign} from '@expo/vector-icons';
 
 
   const Welcome = ({ navigation }) => {
+    
+    
+
+    const logout =  async() => {
+        try {
+          await AsyncStorage.removeItem('LOGGIN_USER')
+          navigation.navigate('Login')
+          // alert('logout')
+        } catch(e) {
+          // remove error
+        }
+      
+       
+    };
+    
+    useEffect(() => {
+      if (!AsyncStorage.getItem('LOGGIN_USER')){
+  
+        return (navigation.navigate("login"))
+  
+      }
+    }, []);
 
 
 
     return(
       <View style={style.container}>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Enroll')}style={style.box}>
+        <TouchableOpacity onPress={() => (0)}style={style.box}>
             <View style={style.inner}>
             <Entypo name="fingerprint" size={150} color="black" />
               <Text >    Enroll   </Text>
             </View>
            </TouchableOpacity>
 
-           <TouchableOpacity onPress={() => navigation.navigate('Landing')}style={style.box}>
+           <TouchableOpacity onPress={() => navigation.navigate('TakeAttendance')}style={style.box}>
             <View style={style.inner}>
             <Ionicons name="camera" size={150} color="green" />
               <Text>    Take Attendance  </Text>
             </View>
            </TouchableOpacity>
 
-           <TouchableOpacity onPress={() => navigation.navigate('Landing')}style={style.box}>
+           <TouchableOpacity onPress={() => navigation.navigate('ViewAttendance')}style={style.box}>
             <View style={style.inner}>
             <Fontisto name="preview" size={150} color="blue" />
               <Text>   View Attendance   </Text>
@@ -42,14 +65,14 @@ import { Ionicons,MaterialIcons,FontAwesome5 ,Entypo,Fontisto,AntDesign} from '@
             </View>
            </TouchableOpacity>
 
-           <TouchableOpacity onPress={() => navigation.navigate('Landing')}style={style.box}>
+           <TouchableOpacity onPress={() => navigation.navigate('About')}style={style.box}>
             <View style={style.inner}>
             <Ionicons name="information-circle-outline" size={150} color="grey" />
                           <Text>    About     </Text>
             </View>
            </TouchableOpacity>
 
-           <TouchableOpacity onPress={() => navigation.navigate('Landing')}style={style.box}>
+           <TouchableOpacity     onPress={()=>logout()}  style={style.box}>
             <View style={style.inner}>
             <AntDesign name="logout" size={110} color="red" />
                           <Text>    Logout   </Text>

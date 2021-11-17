@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import axios from "axios";
 
 // UI elements
@@ -26,8 +26,16 @@ const Login = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [successful, setSuccessful] = useState(false);
 
+  useEffect(() => {
+    // if (AsyncStorage.getItem('LOGGIN_USER')){
 
-  
+    //   return (navigation.navigate("Welcome"))
+
+    // }
+    
+ }, []);
+
+    
   const handleLogin = (e) => {
     e.preventDefault();
 

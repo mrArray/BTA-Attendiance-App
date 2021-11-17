@@ -8,6 +8,10 @@ import Landing from "../screens/Landing";
 import Enroll from "../screens/Enroll";
 import Setting from "../screens/Setting";
 import StudentsList from "../screens/StudentsList";
+import TakeAttendance from "../screens/TakeAttendance";
+import ViewAttendance from "../screens/ViewAttendance";
+import PushRecord from "../screens/PushRecord";
+import About from "../screens/About";
 
 
 
@@ -49,10 +53,13 @@ const Root = () => {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="Enroll" component={Enroll} />
+        <Stack.Screen name="TakeAttendance" component={TakeAttendance} />
+        <Stack.Screen name="About" component={About} />
         <Stack.Screen name="Setting" component={Setting} />
+        <Stack.Screen name="PushRecord" component={PushRecord} />
+        <Stack.Screen name="ViewAttendance" component={ViewAttendance} />
         <Stack.Screen name="StudentsList" component={StudentsList} />
         
-
         <Stack.Screen options={{headerMode: 'none', headerShown: false}} name="Welcome" component={Welcome} />
       </Stack.Navigator>
     </NavigationContainer>

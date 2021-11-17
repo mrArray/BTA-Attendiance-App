@@ -21,7 +21,7 @@ export default class Students extends BaseModel {
       fullname: { type: types.TEXT },
       image: { type: types.TEXT },
       residential_address: { type: types.TEXT },
-      enrolled: { type: types.TEXT },
+      // enrolled: { type: types.TEXT },
       timestamp: { type: types.INTEGER, default: () => Date.now() }
     }
   }
@@ -31,4 +31,10 @@ export default class Students extends BaseModel {
     const params = ['no']
     return this.repository.databaseLayer.executeSql(sql, params).then(({ rows }) => rows)
   }
+
+  static get_to_attend(username) {
+    const sql = `SELECT * FROM ${this.tableName} WHERE username=?`
+   const params = [username]
+   return this.repository.databaseLayer.executeSql(sql, params).then(({ rows }) => rows)
+ }
 }

@@ -7,6 +7,10 @@ import { Ionicons,MaterialIcons,FontAwesome5 ,Entypo,Fontisto,AntDesign} from '@
 import React, { useState, useEffect } from "react";
 import Students from '../Models/Students';
 
+import { BioSample, FingerPosition } from '@digitalpersona/core';
+import { EnrollmentContext, FingerprintsEnroll } from '@digitalpersona/enrollment';
+
+
 
   const Setting = ({ navigation }) => {
     //  const [student, setStudent] = useState({});
@@ -19,7 +23,8 @@ import Students from '../Models/Students';
     //   console.log(student);
 
     // };
-          
+
+    
 
     useEffect(() => {
        Students.dropTable()
@@ -28,6 +33,7 @@ import Students from '../Models/Students';
           console.log(res);
   
         }
+        
       )
   
       //  Students.get_StudentsList()
@@ -55,7 +61,7 @@ import Students from '../Models/Students';
             </View>
            </TouchableOpacity>
 
-           <TouchableOpacity onPress={() => navigation.navigate('Enroll')}style={style.box}>
+           <TouchableOpacity onPress={() => navigation.navigate('PushRecord')}style={style.box}>
             <View style={style.inner}>
             <Entypo name="upload" size={50} color="blue" />
               <Text > Push Record</Text>

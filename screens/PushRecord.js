@@ -1,14 +1,28 @@
 //import PoreCompoent for preventing unnecesary updates. 
 import React, { PureComponent } from 'react';
 import axios from "axios";
-import { View,Image, StyleSheet, FlatList, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import  AsyncStorage  from "@react-native-async-storage/async-storage";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    Keyboard,
+    ActivityIndicator,
+    Image,
+    Platform,
+     StyleSheet
+  } from "react-native";
+  import { Ionicons } from '@expo/vector-icons';
+
+  import  AsyncStorage  from "@react-native-async-storage/async-storage";
 import * as SQLite from 'expo-sqlite';
 import Students from '../Models/Students';
 import Attendance from '../Models/Attendance';
+import { FancyAlert } from 'react-native-expo-fancy-alerts';
+import { basic, form, colors } from "../components/styles";
 
-
-export default class StudentsList extends PureComponent {
+export default class PushRecord extends PureComponent {
 
     //Define your state for your component. 
     state = {
@@ -16,9 +30,16 @@ export default class StudentsList extends PureComponent {
         StudentList: [],
         //Have a loading state where when data retrieve returns data. 
         loading: true,
+        visible:false,
+        message:""
+
     }
     
-
+    closeModal() {
+        this.setState({
+            visible : false
+        });
+      }
     componentDidMount() {
 
 
@@ -26,52 +47,62 @@ export default class StudentsList extends PureComponent {
         AsyncStorage.getItem('LOGGIN_USER')
         .then(value => {
           const user=JSON.parse(value);
-          
-        //   console.log(user.token)
-          axios.get("https://bigtrustacademy.com/accounts/api/list/profile/?user_type=student",
-          {
-              headers:
-              {
-                  'Authorization': `Token ${user.token}`,
-                  'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Methods': 'GET,POST,HEAD,OPTIONS',
-                  'Access-Control-Allow-Credentials': true
-              },
-          })
+
+          Attendance.get_AttendedStudents()
           .then(res => {
-            const stud = res.data
+          const stud = res
+
             // console.log(stud)
+              var today = new Date();
+              var dd = String(today.getDate()).padStart(2, '0');
+              var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+              var yyyy = today.getFullYear();
 
-            this.setState({
-                StudentList: stud, 
-                loading: false
-              });
-              Attendance.dropTable()
-                Students.createTable()
-                stud.forEach(element => {
-                    // element.enrolled='no'
-                    Students.create(element)
+              today = yyyy + '-' + mm + '-' +dd ;
 
-
-                    // console.log(element)
-                });
-               
-                // 17827827aH
+            // console.log(today);
+      
+            stud.forEach(element => {
+                    let formData = new FormData();
+                    formData.append('username', element.username);
+                    formData.append('entrance_timestamp', element.timestamp);
+                    formData.append('date_for', today);
+                    formData.append('present', element.present);
+                    // console.log(new Date().toISOString());
+                    // console.log(formData);
+                              
+             axios.post("https://bigtrustacademy.com/accounts/api/create/daily/attendance/",formData,
+             {
+                 headers:
+                 {
+                     'Authorization': `Token ${user.token}`,
+                     'Access-Control-Allow-Origin': '*',
+                     'Access-Control-Allow-Methods': 'GET,POST,HEAD,OPTIONS',
+                     'Access-Control-Allow-Credentials': true
+                 },
+             })
+     
+             .then(res => {
+               const stud = res.data.detail +"all record Successefully Pushed"
+            //    console.log(res.data.detail);
+               this.setState({
+                visible : true,
+                message:stud,
+                loading: false,
+                StudentList: stud
+               });
+                  
+             })
           })
+     
+     })
 
-
-        })
-          } catch (error) {
-              console.log(error);
-          }
-          
-          //insert into 
-         
-        //   for ( i=0 ;i<props.length;i++){
-        //     Students.create(props[i])
-        //     console.log(props[i]);
-        //   }
-           
+           })
+             } catch (error) {
+                 console.log(error);
+             }
+             
+             
          
   }
   
@@ -92,19 +123,35 @@ export default class StudentsList extends PureComponent {
                 </TouchableOpacity>
     }
     render() {
+
         //Destruct pokeList and Loading from state.
-        const { StudentList, loading } = this.state;
+        const { StudentList, message, visible, loading } = this.state;
         //If laoding to false, return a FlatList which will have data, rednerItem, and keyExtractor props used.
         //Data contains the data being  mapped over.
-        
         //RenderItem a callback return UI for each item.
         //keyExtractor used for giving a unique identifier for each item.
         if(!loading) {
-            return <FlatList 
-                    data={StudentList}
-                    renderItem={this.renderItem}
-                    keyExtractor={(item) => item.username} 
-                    />
+            return <FancyAlert
+            style={styles.alert}
+            icon={
+              <View style={[ styles.icon, { borderRadius: 32 } ]}>
+                <Ionicons
+                  name={Platform.select({ ios: 'ios-close', android: 'md-close' })}
+                  size={36}
+                  color="#FFFFFF"
+                />
+              </View>
+            }
+            // onRequestClose={this.onRequestClose}
+            visible={visible}
+          >
+            <View style={styles.content}>
+              <Text style={styles.contentText}>{message}</Text>
+              <TouchableOpacity onPress={() => this.closeModal()} style={styles.btn}>
+                <Text style={styles.btnText}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </FancyAlert>
         } else {
             return <ActivityIndicator   size="large" color={"primary"} />
 
@@ -117,6 +164,45 @@ export default class StudentsList extends PureComponent {
 
 
 const styles = StyleSheet.create({
+    alert: {
+        backgroundColor: '#EEEEEE',
+      },
+      icon: {
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#C3272B',
+        width: '100%',
+      },
+    content: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: -16,
+        marginBottom: 16,
+      },
+      contentText: {
+        textAlign: 'center',
+      },
+      btn: {
+        borderRadius: 32,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 8,
+        alignSelf: 'stretch',
+        backgroundColor: '#4CB748',
+        marginTop: 16,
+        minWidth: '50%',
+        paddingHorizontal: 16,
+      },
+      btnText: {
+        color: '#FFFFFF',
+      },
   listItemContainer: {
       borderStyle: 'solid',
       borderColor: '#000',

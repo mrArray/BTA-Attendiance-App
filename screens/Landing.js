@@ -1,11 +1,20 @@
-import React, { Component } from "react";
 import  AsyncStorage  from "@react-native-async-storage/async-storage";
+import React, { useState,useEffect } from "react";
 
 // UI elements
 import { View, Text, TouchableOpacity, Image } from "react-native";
 // Custom styles
 import { basic, form } from "../components/styles";
 const Landing = ({ navigation }) => {
+
+  useEffect(() => {
+    if (AsyncStorage.getItem('LOGGIN_USER')){
+
+      return (navigation.navigate("Welcome"))
+
+    }
+    
+ }, []);
 
 
     return (

@@ -11,11 +11,11 @@ import {
   Platform,
    StyleSheet
 } from "react-native";
-import Select2 from "react-select2-native";
+// import Select2 from "react-select2-native";
 import { basic, form, colors } from "../components/styles";
 import EnrolledStudent from "../Models/EnrolledStudent";
 import Students from '../Models/Students';
-// import * as LocalAuthentication from 'expo-local-authentication';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { FancyAlert } from 'react-native-expo-fancy-alerts';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -47,8 +47,8 @@ export default class Enroll extends Component {
   
   componentDidMount() {
 
-    // this.checkDeviceForHardware();
-    // this.checkForBiometrics();
+    this.checkDeviceForHardware();
+    this.checkForBiometrics();
     Students.get_StudentsList()
     .then(res => {
       const StudList = res;
@@ -67,42 +67,42 @@ export default class Enroll extends Component {
  
 
     //check  if Device can enroll Biometrics Data
-  // checkDeviceForHardware = async () => {
+  checkDeviceForHardware = async () => {
 
-  //   let compatible = await LocalAuthentication.hasHardwareAsync();
-  //   if (compatible) {
-  //     alert('Compatible Device!');
-  //   } else
-  //     alert('Current device does not have the necessary hardware!')
-  //   checkForBiometrics = async () => {
+    let compatible = await LocalAuthentication.hasHardwareAsync();
+    if (compatible) {
+      alert('Compatible Device!');
+    } else
+      alert('Current device does not have the necessary hardware!')
+    checkForBiometrics = async () => {
       
-  //    let biometricRecords = await LocalAuthentication.isEnrolledAsync();
-  //     if (!biometricRecords) {
-  //       alert('No Biometrics Found')
-  //     }
-  //     else {
-  //       alert('Biometrics Found')
-  //     }
+     let biometricRecords = await LocalAuthentication.isEnrolledAsync();
+      if (!biometricRecords) {
+        alert('No Biometrics Found')
+      }
+      else {
+        alert('Biometrics Found')
+      }
 
-  //   }
+    }
  
-  // }
+  }
 
   // //check  Biometrics Data
-  // checkForBiometrics = async () => {
+  checkForBiometrics = async () => {
 
-  //   let biometricRecords = await LocalAuthentication.isEnrolledAsync();
+    let biometricRecords = await LocalAuthentication.isEnrolledAsync();
 
-  //   if (!biometricRecords) {
+    if (!biometricRecords) {
 
-  //     alert('No Biometrics Found')
+      alert('No Biometrics Found')
 
-  //   } else {
+    } else {
 
-  //     alert('Biometrics Found')
+      alert('Biometrics Found')
 
-  //   }
-  // };
+    }
+  };
 
   componentDidUpdate(prevProps, prevState) {
     const id = this.state.data[0]
@@ -152,7 +152,7 @@ export default class Enroll extends Component {
       <View style={[basic.container]}>
         <Text style={[form.SaerchHeading, form.field]}>Enroll New Student</Text>
 
-        <Select2
+        {/* <Select2
           isSelectSingle
           style={{ borderRadius: 5 }}
           colorTheme="green"
@@ -165,7 +165,7 @@ export default class Enroll extends Component {
           onRemoveItem={(data) => {
             this.setState({ data });
           }}
-        />
+        /> */}
         <Image source={{ uri: `${SingleStud ? SingleStud.image : ""}` }} style={basic.StudentPhoto} />
 
         <View>
