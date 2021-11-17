@@ -83,7 +83,7 @@ export default class PushRecord extends PureComponent {
              })
      
              .then(res => {
-               const stud = res.data.detail +"all record Successefully Pushed"
+               const stud = "all record Successefully Pushed"
             //    console.log(res.data.detail);
                this.setState({
                 visible : true,
